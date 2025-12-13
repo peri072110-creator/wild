@@ -1,9 +1,7 @@
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
-
 
 class UserProfile(AbstractUser):
     age = models.IntegerField(
@@ -25,14 +23,12 @@ class UserProfile(AbstractUser):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
-
 class Category(models.Model):
     category_image = models.ImageField(upload_to='category_photo')
     category_name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.category_name
-
 
 class SubCategory(models.Model):
     sub_category_name = models.CharField(max_length=50)
@@ -51,6 +47,12 @@ class Product(models.Model):
     product_type = models.BooleanField()
     video = models.FileField(upload_to='video_photo')
     created_date = models.DateTimeField(auto_now_add=True)
+    product_image = models.ImageField(upload_to='product_image', null=True, blank=True)
+    def get_avg_rating(self):
+        ratings =  self.reviews.all()
+        if ratings.exists():
+         return  round(sum([i.stars for i in ratings]) / ratings.count(), 1)
+        return 0
 
     def __str__(self):
         return self.product_name
@@ -65,7 +67,7 @@ class ProductImage(models.Model):
 
 
 class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews" )
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="reviews")
     stars = models.PositiveSmallIntegerField(choices=[(i, str(i)) for i in range(1, 6)])
     comment = models.TextField()
